@@ -18,17 +18,13 @@ import SearchOverlay from "./components/SearchOverlay";
 import { ScheduleData, SessionMoreInfo, Session } from "./types/schedule";
 import { useBookmarksAndStarsContext } from "./contexts/BookmarksAndStarsContext";
 import { getSessionDay } from "./utils/dateTime";
-import {
-  AppleIcon,
-  EmailIcon,
-  GithubIcon,
-  LinkedinIcon,
-  SpeakerIcon,
-  TalkIcon,
-} from "./utils/svgs";
+import { EmailIcon, GithubIcon, SpeakerIcon, TalkIcon } from "./utils/svgs";
 import ScheduleDataService from "./utils/scheduleDataService";
-import { getSessionTrack, requiresAILeadersPass } from "./utils/trackUtils";
-import { track } from "@vercel/analytics";
+import {
+  getSessionTrack,
+  extractTrackFromAssigned,
+  requiresAILeadersPass,
+} from "./utils/trackUtils";
 
 export default function Home() {
   const [sessionIdFromUrl, setSessionIdFromUrl] = useState<string | null>(null);
@@ -137,24 +133,6 @@ export default function Home() {
               "Laurie introduces each track, with special feature from Stephen Chin",
             startsAt: "2025-06-04T10:20:00",
             endsAt: "2025-06-04T10:30:00",
-            isServiceSession: false,
-            isPlenumSession: true,
-            speakers: [],
-            categoryItems: [],
-            questionAnswers: [],
-            roomId: 61336, // Keynote/General Session (Yerba Buena 7&8)
-            liveUrl: null,
-            recordingUrl: null,
-            status: "Accepted",
-            isInformed: true,
-            isConfirmed: true,
-          },
-          {
-            id: "manual-keynote-3",
-            title: "Keynote Doors Open",
-            description: "",
-            startsAt: "2025-06-05T15:40:00",
-            endsAt: "2025-06-05T16:00:00",
             isServiceSession: false,
             isPlenumSession: true,
             speakers: [],
@@ -317,12 +295,10 @@ export default function Home() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-500 dark:text-blue-400 hover:underline"
-                        onClick={() => track("twitter_clicked")}
                       >
                         👨‍💻 @pallavmac
                       </a>
                     </p>
-                    <InfoButtons className="text-xs text-gray-600 dark:text-dark-text-secondary mt-2" />
                   </div>
                   <UserButton
                     appearance={{
@@ -332,16 +308,6 @@ export default function Home() {
                     }}
                   >
                     <UserButton.MenuItems>
-                      <UserButton.Action
-                        label="Connect"
-                        labelIcon={<LinkedinIcon />}
-                        onClick={() =>
-                          window.open(
-                            "https://www.linkedin.com/in/pallav-agarwal/",
-                            "_blank"
-                          )
-                        }
-                      />
                       <UserButton.Action
                         label="Contact"
                         labelIcon={<EmailIcon />}
@@ -387,7 +353,41 @@ export default function Home() {
                         👨‍💻 @pallavmac
                       </a>
                     </p>
-                    <InfoButtons className="text-xs text-gray-600 dark:text-dark-text-secondary mt-2" />
+                    <div className="flex flex-row items-center gap-[6px] text-xs text-gray-600 dark:text-dark-text-secondary mt-2">
+                      <button
+                        className="flex flex-row rounded-lg bg-gray-100 dark:bg-dark-hover px-2 py-1 gap-1 items-center shadow-subtle dark:shadow-dark-subtle border-[1.5px] border-gray-200 dark:border-gray-400/10"
+                        onClick={() =>
+                          window.open(
+                            "https://github.com/PallavAg/aiengineer-schedule",
+                            "_blank"
+                          )
+                        }
+                      >
+                        <GithubIcon /> Contribute
+                      </button>
+                      <button
+                        className="flex flex-row rounded-lg bg-gray-100 dark:bg-dark-hover px-2 py-1 gap-1 items-center shadow-subtle dark:shadow-dark-subtle border-[1.5px] border-gray-200 dark:border-gray-400/10"
+                        onClick={() =>
+                          window.open("mailto:agpallav@gmail.com", "_blank")
+                        }
+                      >
+                        <EmailIcon /> Contact
+                      </button>
+                      <div className="flex flex-row rounded-lg bg-gray-100 dark:bg-dark-hover px-2 py-1 gap-2 items-center shadow-subtle dark:shadow-dark-subtle border-[1.5px] border-gray-200 dark:border-gray-400/10">
+                        <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+                        <button
+                          className="text-green-600 dark:text-green-400 cursor-default"
+                          onClick={() =>
+                            window.open(
+                              "https://www.ai.engineer/schedule",
+                              "_blank"
+                            )
+                          }
+                        >
+                          Schedule up to date
+                        </button>
+                      </div>
+                    </div>
                   </div>
                   <div className="mt-3">
                     <div className="flex flex-row items-center gap-2">
@@ -430,7 +430,41 @@ export default function Home() {
                     👨‍💻 @pallavmac
                   </a>
                 </p>
-                <InfoButtons className="text-sm text-gray-600 dark:text-dark-text-secondary mt-2" />
+                <div className="flex flex-row items-center gap-[6px] text-sm text-gray-600 dark:text-dark-text-secondary mt-2">
+                  <button
+                    className="flex flex-row rounded-lg bg-gray-100 dark:bg-dark-hover px-2 py-1 gap-1 items-center shadow-subtle dark:shadow-dark-subtle border-[1.5px] border-gray-200 dark:border-gray-400/10"
+                    onClick={() =>
+                      window.open(
+                        "https://github.com/PallavAg/aiengineer-schedule",
+                        "_blank"
+                      )
+                    }
+                  >
+                    <GithubIcon /> Contribute
+                  </button>
+                  <button
+                    className="flex flex-row rounded-lg bg-gray-100 dark:bg-dark-hover px-2 py-1 gap-1 items-center shadow-subtle dark:shadow-dark-subtle border-[1.5px] border-gray-200 dark:border-gray-400/10"
+                    onClick={() =>
+                      window.open("mailto:agpallav@gmail.com", "_blank")
+                    }
+                  >
+                    <EmailIcon /> Contact
+                  </button>
+                  <div className="flex flex-row rounded-lg bg-gray-100 dark:bg-dark-hover px-2 py-1 gap-2 items-center shadow-subtle dark:shadow-dark-subtle border-[1.5px] border-gray-200 dark:border-gray-400/10">
+                    <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+                    <button
+                      className="text-green-600 dark:text-green-400 cursor-default"
+                      onClick={() =>
+                        window.open(
+                          "https://www.ai.engineer/schedule",
+                          "_blank"
+                        )
+                      }
+                    >
+                      Schedule up to date
+                    </button>
+                  </div>
+                </div>
               </div>
               {/* Auth Block (Right) */}
               <div className="flex items-center">
@@ -782,64 +816,6 @@ export default function Home() {
         rooms={data.rooms}
         onSessionClick={handleSessionClick}
       />
-    </div>
-  );
-}
-
-function InfoButtons({ className = "" }: { className?: string }) {
-  return (
-    <div className={`flex flex-wrap items-center gap-[6px] ${className}`}>
-      {/* Show link to apps on mobile */}
-      <button
-        className="flex flex-row rounded-lg bg-gray-100 dark:bg-dark-hover px-2 py-1 gap-1 items-center shadow-md dark:shadow-md border-2 border-blue-500 dark:border-blue-700"
-        onClick={() => {
-          window.open(
-            "https://apps.apple.com/us/developer/pulkit-agarwal/id1723503441",
-            "_blank"
-          );
-          track("app_clicked");
-        }}
-      >
-        <span
-          className={`flex flex-row gap-[5px] text-gray-600 dark:text-dark-text-secondary`}
-        >
-          <AppleIcon /> Try my AI iOS apps
-        </span>
-      </button>
-
-      {/* Only show contribute button on Desktop */}
-      <button
-        className="hidden sm:flex flex-row rounded-lg bg-gray-100 dark:bg-dark-hover px-2 py-1 gap-1 items-center shadow-subtle dark:shadow-dark-subtle border-[1.5px] border-gray-200 dark:border-gray-400/10"
-        onClick={() =>
-          window.open(
-            "https://github.com/PallavAg/aiengineer-schedule",
-            "_blank"
-          )
-        }
-      >
-        <GithubIcon /> <span className="hidden md:block">Contribute</span>
-      </button>
-
-      <button
-        className="flex flex-row rounded-lg bg-gray-100 dark:bg-dark-hover px-2 py-1 gap-1 items-center shadow-subtle dark:shadow-dark-subtle border-[1.5px] border-gray-200 dark:border-gray-400/10"
-        onClick={() => {
-          window.open("https://www.linkedin.com/in/pallav-agarwal/", "_blank");
-          track("linkedin_clicked");
-        }}
-      >
-        <LinkedinIcon /> Connect
-      </button>
-      <div className="flex flex-row rounded-lg bg-gray-100 dark:bg-dark-hover px-2 py-1 gap-2 items-center shadow-subtle dark:shadow-dark-subtle border-[1.5px] border-gray-200 dark:border-gray-400/10">
-        <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
-        <button
-          className="text-green-600 dark:text-green-400 cursor-default"
-          onClick={() =>
-            window.open("https://www.ai.engineer/schedule", "_blank")
-          }
-        >
-          <span className="hidden lg:inline">Schedule </span>Up to date
-        </button>
-      </div>
     </div>
   );
 }
